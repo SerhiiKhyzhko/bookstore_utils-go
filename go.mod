@@ -1,4 +1,4 @@
-module bookstore_utils-go
+module github.com/SerhiiKhyzhko/bookstore_utils-go
 
 go 1.23.6
 
