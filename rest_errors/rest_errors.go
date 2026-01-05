@@ -14,62 +14,62 @@ type RestErr interface {
 }
 
 type restErr struct {
-	message string
-	status  int 
-	error   string 
-	causes []any 
+	ErrorMessage string `json:"Message"`
+	ErrorStatus  int `json:"Status"`
+	ErrorText   string `json:"Error"`
+	ErrorCauses []any `json:"Causes"`
 }
 
 func (e restErr) Message() string{
-	return e.message
+	return e.ErrorMessage
 }
 
 func (e restErr) Status() int{
-	return e.status
+	return e.ErrorStatus
 }
 
 func (e restErr) Causes() []any {
-	return e.causes
+	return e.ErrorCauses
 }
 
 func (e restErr) Error() string {
 	return fmt.Sprintf("message: %s - status: %d - error: %s - causes: [ %v ]", 
-	e.message, e.status, e.error, e.causes)
+	e.ErrorMessage, e.ErrorStatus, e.ErrorText, e.ErrorCauses)
 }
 
 func NewRestError(message string, status int, err string, causes []any) RestErr {
 	return restErr{
-		message: message,
-		status: status,
-		error: err,
-		causes: causes,
+		ErrorMessage: message,
+		ErrorStatus: status,
+		ErrorText: err,
+		ErrorCauses: causes,
 	}
 }
 
 func NewBadRequestError(message string) RestErr {
 	return restErr{
-		message: message,
-		status: http.StatusBadRequest,
-		error: "bad request",
+		ErrorMessage: message,
+		ErrorStatus: http.StatusBadRequest,
+		ErrorText: "bad request",
 	}
 }
 
 func NewNotFoundError(message string) RestErr {
 	return restErr{
-		message: message,
-		status: http.StatusNotFound,
-		error: "not found",
+		ErrorMessage: message,
+		ErrorStatus: http.StatusNotFound,
+		ErrorText: "not found",
 	}
 }
 
 func NewInternalServerError(message string, err error) RestErr {
 	result := restErr{
-		message: message,
-		status: http.StatusInternalServerError,
-		error: "internal server error",
+		ErrorMessage: message,
+		ErrorStatus: http.StatusInternalServerError,
+		ErrorText: "internal server error",
 	}
 	if err != nil {
-		result.causes = append(result.causes, err.Error())
+		result.ErrorCauses = append(result.ErrorCauses, err.Error())
 	}
 	return result
 }
