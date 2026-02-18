@@ -44,3 +44,10 @@ func Error(msg string, err error, tags ...zap.Field) {
 	log.Error(msg, tags...)
 	log.Sync()
 }
+
+func Fatal(msg string, err error, tags ...zap.Field) {
+	tags = append(tags, zap.NamedError("error", err))
+
+	log.Sync()
+	log.Fatal(msg, tags...)
+}
