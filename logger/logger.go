@@ -1,16 +1,44 @@
 package logger
 
 import (
+	"strings"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+type Logger struct {
+	logger *zap.Logger
+}
 
-var log *zap.Logger
+type Config struct {
+    Level       string   
+    OutputPaths []string // e.g. []string{"stdout"}
+}
 
-func init() {
+func getLogLevel(level string) zapcore.Level {
+	switch strings.ToLower(level) {
+	case "debug":
+		return zap.DebugLevel
+	case "info":
+		return zap.InfoLevel
+	case "warn":
+		return zap.WarnLevel
+	case "error":
+		return zap.ErrorLevel
+	case "panic":
+		return zap.PanicLevel
+	default:
+		return zap.InfoLevel
+	}
+}
+
+func NewLogger(cfg Config) (*Logger, error) {
+	var logger *zap.Logger
+	var err error
+	
 	logConfig := zap.Config{
-		OutputPaths: []string{"stdout"},
-		Level: zap.NewAtomicLevelAt(zap.InfoLevel),
+		OutputPaths: cfg.OutputPaths,
+		Level: zap.NewAtomicLevelAt(getLogLevel(cfg.Level)),
 		Encoding: "json",
 		EncoderConfig: zapcore.EncoderConfig{
 			LevelKey: "level",
@@ -22,32 +50,20 @@ func init() {
 		},
 	}
 
-	var err error
-	if log, err = logConfig.Build(); err != nil {
-		panic(err)
+	if logger, err = logConfig.Build(); err != nil {
+		return nil, err
 	}
+	return &Logger{logger: logger}, nil
 }
 
-//підміна логера для тетування  
-func SetLogger(newLogger *zap.Logger) {
-	log = newLogger
+func (l *Logger) Info(msg string, tags ...zap.Field) {
+	l.logger.Info(msg, tags...)
+	l.logger.Sync()
 }
 
-func Info(msg string, tags ...zap.Field) {
-	log.Info(msg, tags...)
-	log.Sync()
-}
-
-func Error(msg string, err error, tags ...zap.Field) {
+func (l *Logger) Error(msg string, err error, tags ...zap.Field) {
 	tags = append(tags, zap.NamedError("error", err))
 
-	log.Error(msg, tags...)
-	log.Sync()
-}
-
-func Fatal(msg string, err error, tags ...zap.Field) {
-	tags = append(tags, zap.NamedError("error", err))
-
-	log.Sync()
-	log.Fatal(msg, tags...)
+	l.logger.Error(msg, tags...)
+	l.logger.Sync()
 }
