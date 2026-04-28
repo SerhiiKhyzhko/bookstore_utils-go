@@ -14,17 +14,17 @@ type RestErr interface {
 }
 
 type restErr struct {
-	ErrorMessage string `json:"Message"`
-	ErrorStatus  int `json:"Status"`
-	ErrorText   string `json:"Error"`
-	ErrorCauses []any `json:"Causes"`
+	ErrorMessage string `json:"ErrorMessage"`
+	ErrorStatus  int    `json:"ErrorStatus"`
+	ErrorText    string `json:"ErrorText"`
+	ErrorCauses  []any  `json:"ErrorCauses"`
 }
 
-func (e restErr) Message() string{
+func (e restErr) Message() string {
 	return e.ErrorMessage
 }
 
-func (e restErr) Status() int{
+func (e restErr) Status() int {
 	return e.ErrorStatus
 }
 
@@ -33,40 +33,44 @@ func (e restErr) Causes() []any {
 }
 
 func (e restErr) Error() string {
-	return fmt.Sprintf("message: %s - status: %d - error: %s - causes: [ %v ]", 
-	e.ErrorMessage, e.ErrorStatus, e.ErrorText, e.ErrorCauses)
+	if len(e.ErrorCauses) == 0 {
+		return fmt.Sprintf("message: %s - status: %d - error: %s",
+			e.ErrorMessage, e.ErrorStatus, e.ErrorText)
+	}
+	return fmt.Sprintf("message: %s - status: %d - error: %s - causes: [ %v ]",
+		e.ErrorMessage, e.ErrorStatus, e.ErrorText, e.ErrorCauses)
 }
 
 func NewRestError(message string, status int, err string, causes []any) RestErr {
 	return restErr{
 		ErrorMessage: message,
-		ErrorStatus: status,
-		ErrorText: err,
-		ErrorCauses: causes,
+		ErrorStatus:  status,
+		ErrorText:    err,
+		ErrorCauses:  causes,
 	}
 }
 
 func NewBadRequestError(message string) RestErr {
 	return restErr{
 		ErrorMessage: message,
-		ErrorStatus: http.StatusBadRequest,
-		ErrorText: "bad request",
+		ErrorStatus:  http.StatusBadRequest,
+		ErrorText:    "bad request",
 	}
 }
 
 func NewNotFoundError(message string) RestErr {
 	return restErr{
 		ErrorMessage: message,
-		ErrorStatus: http.StatusNotFound,
-		ErrorText: "not found",
+		ErrorStatus:  http.StatusNotFound,
+		ErrorText:    "not found",
 	}
 }
 
 func NewInternalServerError(message string, err error) RestErr {
 	result := restErr{
 		ErrorMessage: message,
-		ErrorStatus: http.StatusInternalServerError,
-		ErrorText: "internal server error",
+		ErrorStatus:  http.StatusInternalServerError,
+		ErrorText:    "internal server error",
 	}
 	if err != nil {
 		result.ErrorCauses = append(result.ErrorCauses, err.Error())
