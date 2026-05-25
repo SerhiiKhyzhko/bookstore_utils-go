@@ -38,6 +38,14 @@ func TestNewBadRequestError(t *testing.T) {
 	assert.Equal(t, err.Error(), "message: invalid test email - status: 400 - error: bad request")
 }
 
+func TestNewUnauthorizedError(t *testing.T) {
+	err := NewUnauthorizedError("invalid token")
+	assert.NotEqual(t, err, nil)
+	assert.Equal(t, err.Message(), "invalid token")
+	assert.Equal(t, err.Status(), http.StatusUnauthorized)
+	assert.Equal(t, err.Error(), "message: invalid token - status: 401 - error: unauthorized")
+}
+
 func TestNewError(t *testing.T) {
 	err := NewRestError("test custom error", 400, "bad request", nil)
 	assert.NotEqual(t, err, nil)
